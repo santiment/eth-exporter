@@ -15,7 +15,7 @@ Then define the extraction pipeline:
 ```js
 const { ETHExporter } = require('eth-exporter')
 
-exporter = new ETHExporter("erc20-transfers")
+const exporter = new ETHExporter("erc20-transfers")
 
 const transferEventAbi = [{
   "indexed": true,
