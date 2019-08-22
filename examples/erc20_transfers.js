@@ -1,6 +1,6 @@
 const { ETHExporter } = require('../')
 
-exporter = new ETHExporter("erc20-transfers")
+const exporter = new ETHExporter("erc20-transfers")
 
 const transferEventAbi = [{
   "indexed": true,
