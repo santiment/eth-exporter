@@ -1,0 +1,29 @@
+{
+  "name": "eth-exporter",
+  "version": "1.0.0",
+  "description": "A library that allows to easily export data to the Santiment data pipeline",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha",
+    "start": "node examples/erc20_transfers.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/santiment/eth-exporter.git"
+  },
+  "keywords": [
+    "ethereum",
+    "santiment"
+  ],
+  "author": "Valentin Mihov",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/santiment/eth-exporter/issues"
+  },
+  "homepage": "https://github.com/santiment/eth-exporter#readme",
+  "dependencies": {
+    "lodash": "^4.17.15",
+    "san-exporter": "git+https://github.com/santiment/san-exporter.git",
+    "web3": "^1.2.1"
+  }
+}
