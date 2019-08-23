@@ -20,5 +20,6 @@ services:
     environment:
       KAFKA_URL: kafka:9092
       ZOOKEEPER_URL: zookeeper:2181
-      PARITY_URL: http://parity-optimized.default.svc.cluster.local:8545
-      START_BLOCK: 3000000
+      PARITY_URL: ws://parity-parity.default.svc.cluster.local:8546
+      START_BLOCK: 7700000
+    command: ["npm", "start"]

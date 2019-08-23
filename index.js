@@ -93,21 +93,48 @@ exports.ETHExporter = class {
   /**
    * Decodes an event given an ABI
    *
-   * @param {Object} abi The ABI describing the data in the event
-   * @param {Object} event The event that needs to be decoded
+   * @param {array} abi The ABI describing the data in the event
+   * @param {object} event The event that needs to be decoded
    *
    * @returns The decoded event data or `null` if the data can't be decoded
    */
   decodeEvent(abi, event) {
     try {
       const names = abi.map(field => field.name)
-      const result = this.web3.eth.abi.decodeLog(abi, event.data, _.slice(event.topics, 1));
+      let result = this.web3.eth.abi.decodeLog(abi, event.data, _.slice(event.topics, 1));
 
-      return _.pick(result, names)
+      result = _.pick(result, names)
+
+      result.contract = event.address
+      result.transactionHash = event.transactionHash
+      result.timestamp = event.timestamp
+      result.blockNumber = event.blockNumber
+
+      return result
     } catch (e) {
       console.error(`Error decoding ${JSON.stringify(event)}: ${e}`)
       return null
     }
+  }
+
+  /**
+   *
+   * @param {array} topics A list of topics to monitor
+   * @param {array} abi The ABI of the events that will be used to decode them
+   * @param {function} eventHandler An optional function for additionally processing the events
+   */
+  async extractEventsWithAbi(topics, abi, eventHandler) {
+    this.extractEvents(topics, event => {
+      const decodedEvent = this.decodeEvent(abi, event)
+
+      if (!decodedEvent) return
+
+      if (eventHandler) {
+        return eventHandler(decodedEvent)
+      }
+
+      return decodedEvent
+    })
   }
 
   /**
@@ -116,10 +143,10 @@ exports.ETHExporter = class {
    * the parsed event, which should be stored further in the pipeline. If the
    * handler returns `null`, nothing will be stored in the pipeline.
    *
-   * @param {function} eventHandler A function which will be invoked to process each event
    * @param {array} topics An array of topics to listen for
+   * @param {function} eventHandler A function which will be invoked to process each event
    */
-  async events(eventHandler, topics) {
+  async extractEvents(topics, eventHandler) {
     if (!this.isConnected) {
       await this.connect()
     }

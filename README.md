@@ -31,16 +31,12 @@ const transferEventAbi = [{
   "type": "uint256"
 }]
 
-exporter.events(event => {
-  const decodedEvent = exporter.decodeEvent(transferEventAbi, event)
-
-  decodedEvent.contract = event.address
-  decodedEvent.transactionHash = event.transactionHash
-  decodedEvent.timestamp = event.timestamp
-  decodedEvent.blockNumber = event.blockNumber
-
-  return decodedEvent
-}, ["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"])
+exporter.extractEventsWithAbi(
+  topics = ["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"],
+  abi = transferEventAbi,
+  event => {
+    return console.log(event)
+  })
 ```
 
 **NOTE:** The data that is returned at the end of your pipeline should be a flat JSON
