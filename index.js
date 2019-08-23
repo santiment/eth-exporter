@@ -53,7 +53,6 @@ exports.ETHExporter = class {
   set parityNode(value) {
     if (this._parityNode != value) {
       this._parityNode = value
-      console.log(this._parityNode)
       this.web3 = new Web3(this._parityNode)
 
       this.web3.extend({
