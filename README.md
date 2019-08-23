@@ -4,45 +4,28 @@ This package defines an easy to use class for exporting data from the ETH blockc
 
 ## Usage
 
-In order to write an exporter first install the package in your JS project:
+There is a [Yeoman](https://yeoman.io) generator for new exporters, so using that is the easiest. Make sure you have `docker` and `docker-compose` installed first and then run:
 
 ```
-$ npm add https://github.com/santiment/eth-exporter
+$ npm install -g yo
+$ npm install -g https://github.com/santiment/generator-eth-exporter
 ```
 
-Then define the extraction pipeline:
+Then create a folder for the new exporter and initialize the skeleton:
 
-```js
-const { ETHExporter } = require('eth-exporter')
-
-const exporter = new ETHExporter("erc20-transfers")
-
-const transferEventAbi = [{
-  "indexed": true,
-  "name": "from",
-  "type": "address"
-}, {
-  "indexed": true,
-  "name": "to",
-  "type": "address"
-}, {
-  "indexed": false,
-  "name": "value",
-  "type": "uint256"
-}]
-
-exporter.extractEventsWithAbi(
-  topics = ["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"],
-  abi = transferEventAbi,
-  event => {
-    return console.log(event)
-  })
+```
+$ mkdir my-exporter && cd my-exporter
+$ yo eth-exporter
 ```
 
-**NOTE:** The data that is returned at the end of your pipeline should be a flat JSON
+Running the exporter is done with
 
-See in `examples` for more examples.
+```
+$ docker-compose up --build
+```
 
-## Running with docker
+If you want to cleanup the current state and run from the beginning run
 
-The easiest way to test locally is to run your pipeline with docker-compose. You can checkout the current repo the run `docker-compose up --build` to run an example pipeline, which parses all ERC20 transfer events.
+```
+$ docker-compose rm
+```
