@@ -1,10 +1,11 @@
+const { formatters } = require('web3-core-helpers')
 const { Exporter } = require('san-exporter')
 const Web3 = require('web3')
 const _ = require('lodash')
 
 async function getTimestamp(web3, blockNumber, blockTimestamps) {
   if (!blockTimestamps[blockNumber]) {
-    blockTimestamps[blockNumber] = (await web3.eth.getBlock(blockNumber)).timestamp
+    blockTimestamps[blockNumber] = (await web3.parity.getBlockHeaderByNumber(blockNumber)).timestamp
   }
 
   return blockTimestamps[blockNumber]
@@ -42,6 +43,8 @@ exports.ETHExporter = class {
       blockNumber: parseInt(process.env.START_BLOCK || "-1"),
       primaryKey: parseInt(process.env.START_PRIMARY_KEY || "-1")
     }
+
+    this.isConnected = false
   }
 
   /**
@@ -51,7 +54,18 @@ exports.ETHExporter = class {
     if (this._parityNode != value) {
       this._parityNode = value
       console.log(this._parityNode)
-      this.web3 = new Web3(new Web3.providers.HttpProvider(this._parityNode))
+      this.web3 = new Web3(this._parityNode)
+
+      this.web3.extend({
+        property: "parity",
+        methods: [{
+          name: "getBlockHeaderByNumber",
+          call: "parity_getBlockHeaderByNumber",
+          params: 1,
+          inputFormatter: [formatters.inputDefaultBlockNumberFormatter],
+          outputFormatter: formatters.outputBlockFormatter
+        }]
+      })
     }
   }
 
@@ -68,22 +82,48 @@ exports.ETHExporter = class {
   }
 
   async connect() {
+    if (this.isConnected) return
+
     await this.exporter.connect()
     await this.initLastProcessedBlock()
-  }
 
-  decodeEvent(abi, event) {
-    const names = abi.map(field => field.name)
-    const result = exporter.web3.eth.abi.decodeLog(abi, event.data, _.slice(event.topics, 1));
-
-    return _.pick(result, names)
+    this.isConnected = true
   }
 
   /**
-   * @param {function} eventHandler
-   * @param {array} topics
+   * Decodes an event given an ABI
+   *
+   * @param {Object} abi The ABI describing the data in the event
+   * @param {Object} event The event that needs to be decoded
+   *
+   * @returns The decoded event data or `null` if the data can't be decoded
+   */
+  decodeEvent(abi, event) {
+    try {
+      const names = abi.map(field => field.name)
+      const result = this.web3.eth.abi.decodeLog(abi, event.data, _.slice(event.topics, 1));
+
+      return _.pick(result, names)
+    } catch (e) {
+      console.error(`Error decoding ${JSON.stringify(event)}: ${e}`)
+      return null
+    }
+  }
+
+  /**
+   * Streams the events from the ETH blockchain matching a given list of topics.
+   * Invokes the `eventHandler` for each found event. The handler should return
+   * the parsed event, which should be stored further in the pipeline. If the
+   * handler returns `null`, nothing will be stored in the pipeline.
+   *
+   * @param {function} eventHandler A function which will be invoked to process each event
+   * @param {array} topics An array of topics to listen for
    */
   async events(eventHandler, topics) {
+    if (!this.isConnected) {
+      await this.connect()
+    }
+
     while (true) {
       const currentBlock = await this.web3.eth.getBlockNumber() - this.confirmations
       console.info(`Fetching transfer events for interval ${this.lastProcessedPosition.blockNumber}:${currentBlock}`)
@@ -92,13 +132,15 @@ exports.ETHExporter = class {
         const fromBlock = this.lastProcessedPosition.blockNumber + 1
         const toBlock = Math.min(this.lastProcessedPosition.blockNumber + this.blockInterval, currentBlock)
 
-        const events = (await processBlocks(
+        let events = (await processBlocks(
           this.web3,
           this.lastProcessedPosition.primaryKey,
           fromBlock,
           toBlock,
           topics)
         ).map(eventHandler)
+
+        events = _.compact(events)
 
         console.info(`Storing and setting primary keys ${events.length} messages for blocks ${fromBlock}:${toBlock}`)
         await this.exporter.sendDataWithKey(events, "primaryKey")

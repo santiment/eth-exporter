@@ -31,18 +31,16 @@ const transferEventAbi = [{
   "type": "uint256"
 }]
 
-exporter.connect().then(() => {
-  exporter.events(event => {
-    const decodedEvent = exporter.decodeEvent(transferEventAbi, event)
+exporter.events(event => {
+  const decodedEvent = exporter.decodeEvent(transferEventAbi, event)
 
-    decodedEvent.contract = event.address
-    decodedEvent.transactionHash = event.transactionHash
-    decodedEvent.timestamp = event.timestamp
-    decodedEvent.blockNumber = event.blockNumber
+  decodedEvent.contract = event.address
+  decodedEvent.transactionHash = event.transactionHash
+  decodedEvent.timestamp = event.timestamp
+  decodedEvent.blockNumber = event.blockNumber
 
-    return decodedEvent
-  }, ["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"])
-})
+  return decodedEvent
+}, ["0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"])
 ```
 
 **NOTE:** The data that is returned at the end of your pipeline should be a flat JSON
