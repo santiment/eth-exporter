@@ -25,5 +25,8 @@
     "lodash": "^4.17.15",
     "san-exporter": "git+https://github.com/santiment/san-exporter.git",
     "web3": "^1.2.1"
+  },
+  "devDependencies": {
+    "mocha": "^6.2.0"
   }
 }

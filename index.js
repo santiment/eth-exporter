@@ -108,6 +108,7 @@ exports.ETHExporter = class {
       result.transactionHash = event.transactionHash
       result.timestamp = event.timestamp
       result.blockNumber = event.blockNumber
+      result.primaryKey = event.primaryKey
 
       return result
     } catch (e) {

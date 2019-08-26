@@ -29,3 +29,11 @@ If you want to cleanup the current state and run from the beginning run
 ```
 $ docker-compose rm
 ```
+
+## Running the tests
+
+To run the tests run
+
+```
+$ docker-compose run --no-deps --rm exporter npm test
+```
