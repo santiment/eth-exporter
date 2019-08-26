@@ -173,6 +173,7 @@ exports.ETHExporter = class {
         await this.exporter.sendDataWithKey(events, "primaryKey")
 
         this.lastProcessedPosition.blockNumber = toBlock
+        this.lastProcessedPosition.primaryKey += events.length
         await this.exporter.savePosition(this.lastProcessedPosition)
       }
 
