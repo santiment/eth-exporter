@@ -3,6 +3,18 @@ const { Exporter } = require('san-exporter')
 const Web3 = require('web3')
 const _ = require('lodash')
 
+function findJSONInterface(web3, abi, topic) {
+  return abi.find((jsonInterface) =>
+    jsonInterface.type == "event" && web3.eth.abi.encodeEventSignature(jsonInterface) == topic
+  )
+}
+
+function topicsFromAbi(web3, abi) {
+  return abi
+    .filter((jsonInterface) => jsonInterface.type == "event")
+    .map((jsonInterface) => web3.eth.abi.encodeEventSignature(jsonInterface))
+}
+
 async function getTimestamp(web3, blockNumber, blockTimestamps) {
   if (!blockTimestamps[blockNumber]) {
     blockTimestamps[blockNumber] = (await web3.parity.getBlockHeaderByNumber(blockNumber)).timestamp
@@ -11,13 +23,14 @@ async function getTimestamp(web3, blockNumber, blockTimestamps) {
   return blockTimestamps[blockNumber]
 }
 
-async function processBlocks(web3, primaryKeyStart, fromBlock, toBlock, topics) {
+async function processBlocks(web3, primaryKeyStart, fromBlock, toBlock, topics, address) {
   const blockTimestamps = {}
 
   const events = (await web3.eth.getPastLogs({
     fromBlock: web3.utils.numberToHex(fromBlock),
     toBlock: web3.utils.numberToHex(toBlock),
-    topics: topics
+    topics: topics,
+    address: address
   }))
 
   for (let i = 0; i < events.length; i++) {
@@ -99,18 +112,13 @@ exports.ETHExporter = class {
    */
   decodeEvent(abi, event) {
     try {
-      const names = abi.map(field => field.name)
-      let result = this.web3.eth.abi.decodeLog(abi, event.data, _.slice(event.topics, 1));
+      const jsonInterface = findJSONInterface(this.web3, abi, event.topics[0])
+      let result = this.web3.eth.abi.decodeLog(jsonInterface.inputs, event.data, _.slice(event.topics, 1));
 
-      result = _.pick(result, names)
+      event["name"] = jsonInterface.name
+      event["decoded"] = JSON.stringify(result)
 
-      result.contract = event.address
-      result.transactionHash = event.transactionHash
-      result.timestamp = event.timestamp
-      result.blockNumber = event.blockNumber
-      result.primaryKey = event.primaryKey
-
-      return result
+      return event
     } catch (e) {
       console.error(`Error decoding ${JSON.stringify(event)}: ${e}`)
       return null
@@ -119,12 +127,17 @@ exports.ETHExporter = class {
 
   /**
    *
-   * @param {array} topics A list of topics to monitor
    * @param {array} abi The ABI of the events that will be used to decode them
+   * @param {array} topics A list of topics to monitor. If not specified all the events will be watched
+   * @param {array} address A contract address or a list of contract addresses to filter the events
    * @param {function} eventHandler An optional function for additionally processing the events
    */
-  async extractEventsWithAbi(topics, abi, eventHandler) {
-    this.extractEvents(topics, event => {
+  async extractEventsWithAbi(abi, topics, address, eventHandler) {
+    if (!topics) {
+      topics = [topicsFromAbi(this.web3, abi)]
+    }
+
+    return this.extractEvents(topics, address, event => {
       const decodedEvent = this.decodeEvent(abi, event)
 
       if (!decodedEvent) return
@@ -146,7 +159,7 @@ exports.ETHExporter = class {
    * @param {array} topics An array of topics to listen for
    * @param {function} eventHandler A function which will be invoked to process each event
    */
-  async extractEvents(topics, eventHandler) {
+  async extractEvents(topics, address, eventHandler) {
     if (!this.isConnected) {
       await this.connect()
     }
@@ -164,7 +177,8 @@ exports.ETHExporter = class {
           this.lastProcessedPosition.primaryKey,
           fromBlock,
           toBlock,
-          topics)
+          topics,
+          address)
         ).map(eventHandler)
 
         events = _.compact(events)

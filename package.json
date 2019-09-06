@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha",
-    "start": "node examples/erc20_transfers.js"
+    "start": "node examples/compound_events.js"
   },
   "repository": {
     "type": "git",

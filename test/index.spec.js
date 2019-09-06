@@ -1,5 +1,6 @@
 const assert = require("assert")
 const { ETHExporter } = require("..")
+const erc20Abi = require('./erc20_abi.json')
 
 const transferEvent = {
   "address": "0xdac17f958d2ee523a2206206994597c13d831ec7",
@@ -21,39 +22,29 @@ const transferEvent = {
   "primaryKey": 1
 }
 
-const transferEventAbi = [{
-  "indexed": true,
-  "name": "from",
-  "type": "address"
-}, {
-  "indexed": true,
-  "name": "to",
-  "type": "address"
-}, {
-  "indexed": false,
-  "name": "value",
-  "type": "uint256"
-}]
-
 
 describe('decodeEvent', function () {
   it("decodes a transfer event properly", function () {
     exporter = new ETHExporter("test-exporter")
 
-    decodedEvent = exporter.decodeEvent(transferEventAbi, transferEvent)
+    decodedEvent = exporter.decodeEvent(erc20Abi, transferEvent)
 
-    assert.deepStrictEqual(
-      decodedEvent,
-      {
+    assert.equal(
+      decodedEvent["decoded"],
+      JSON.stringify({
+        "0": "0xa8aE6549c66C59aa55D50377948dFBE362d56B03",
+        "1": "0x10B6B56d69A0A188bf5815BfD87B898D81b8D357",
+        "2": "211024817",
+        "__length__": 3,
         "from": "0xa8aE6549c66C59aa55D50377948dFBE362d56B03",
         "to": "0x10B6B56d69A0A188bf5815BfD87B898D81b8D357",
-        "value": "211024817",
-        "primaryKey": 1,
-        "blockNumber": 8425160,
-        "timestamp": 12341234,
-        "contract": "0xdac17f958d2ee523a2206206994597c13d831ec7",
-        "transactionHash": "0x283b610fed01250332ae15cea1551e63bb42f010e29b410443ae283fe0dbd49d"
-      }
+        "value": "211024817"
+      })
+    )
+
+    assert.equal(
+      decodedEvent["name"],
+      "Transfer"
     )
   })
 })
