@@ -3,4 +3,4 @@ const contractAbi = require('./compound_abi.json')
 
 const exporter = new ETHExporter("compound-events")
 
-exporter.extractEventsWithAbi(contractAbi, null, null, console.log)
+exporter.extractEventsWithAbi(contractAbi)
