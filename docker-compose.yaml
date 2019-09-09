@@ -13,6 +13,16 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - zookeeper
+  clickhouse:
+    image: yandex/clickhouse-server
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./examples/clickhouse_init.d:/docker-entrypoint-initdb.d
+    depends_on:
+      - kafka
   exporter:
     build: .
     volumes:
@@ -20,6 +30,9 @@ services:
     environment:
       KAFKA_URL: kafka:9092
       ZOOKEEPER_URL: zookeeper:2181
-      PARITY_URL: ws://parity-parity.default.svc.cluster.local:8546
+      PARITY_URL: http://parity-parity.default.svc.cluster.local:8545
+      KAFKA_TOPIC: eth_exporter_events
       START_BLOCK: 7700000
     command: ["npm", "start"]
+    depends_on:
+      - kafka
