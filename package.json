@@ -22,8 +22,8 @@
   },
   "homepage": "https://github.com/santiment/eth-exporter#readme",
   "dependencies": {
+    "@santiment-network/san-exporter": "0.0.5",
     "lodash": "^4.17.15",
-    "san-exporter": "git+https://github.com/santiment/san-exporter.git",
     "web3": "^1.2.1"
   },
   "devDependencies": {

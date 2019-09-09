@@ -8,7 +8,7 @@ There is a [Yeoman](https://yeoman.io) generator for new exporters, so using tha
 
 ```
 $ npm install -g yo
-$ npm install -g https://github.com/santiment/generator-eth-exporter
+$ npm install -g @santiment-network/generator-eth-exporter
 ```
 
 Then create a folder for the new exporter and initialize the skeleton:
