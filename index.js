@@ -3,6 +3,8 @@ const { Exporter } = require('san-exporter')
 const Web3 = require('web3')
 const _ = require('lodash')
 
+const USE_PARITY_BLOCK_HEADERS = process.env.USE_PARITY_BLOCK_HEADERS == "1" || process.env.USE_PARITY_BLOCK_HEADERS == "true"
+
 function findJSONInterface(web3, abi, topic) {
   return abi.find((jsonInterface) =>
     jsonInterface.type == "event" && web3.eth.abi.encodeEventSignature(jsonInterface) == topic
@@ -17,7 +19,11 @@ function topicsFromAbi(web3, abi) {
 
 async function getTimestamp(web3, blockNumber, blockTimestamps) {
   if (!blockTimestamps[blockNumber]) {
-    blockTimestamps[blockNumber] = (await web3.parity.getBlockHeaderByNumber(blockNumber)).timestamp
+    if (USE_PARITY_BLOCK_HEADERS) {
+      blockTimestamps[blockNumber] = (await web3.parity.getBlockHeaderByNumber(blockNumber)).timestamp
+    } else {
+      blockTimestamps[blockNumber] = (await web3.eth.getBlock(blockNumber)).timestamp
+    }
   }
 
   return blockTimestamps[blockNumber]
