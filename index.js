@@ -1,5 +1,5 @@
 const { formatters } = require('web3-core-helpers')
-const { Exporter } = require('san-exporter')
+const { Exporter } = require('@santiment-network/san-exporter')
 const Web3 = require('web3')
 const _ = require('lodash')
 

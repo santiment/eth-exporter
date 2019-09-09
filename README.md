@@ -51,7 +51,7 @@ $ docker-compose run --no-deps --rm exporter npm test
 The main way to use the extractor is to extract all the events defined into an ABI. You can do it like this:
 
 ```js
-const { ETHExporter } = require('eth-exporter')
+const { ETHExporter } = require('@santiment-network/eth-exporter')
 const contractAbi = require('./abi.json')
 
 const exporter = new ETHExporter("contract-events")
