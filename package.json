@@ -1,6 +1,6 @@
 {
-  "name": "eth-exporter",
-  "version": "1.0.0",
+  "name": "@santiment-network/eth-exporter",
+  "version": "0.1.0",
   "description": "A library that allows to easily export data to the Santiment data pipeline",
   "main": "index.js",
   "scripts": {
