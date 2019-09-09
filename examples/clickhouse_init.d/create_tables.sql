@@ -23,30 +23,39 @@ CREATE TABLE IF NOT EXISTS events_stream (
 );
 
 CREATE TABLE IF NOT EXISTS events (
-  dt DateTime,
+  timestamp DateTime,
   address String,
   blockHash String,
   blockNumber UInt64,
   logIndex UInt64,
+  removed UInt8,
+  topics Array(String),
   transactionHash String,
   transactionIndex UInt64,
+  transactionLogIndex String,
   type String,
+  id String,
   primaryKey UInt64,
   decoded String,
   name String
 ) ENGINE = ReplacingMergeTree()
-  ORDER BY (name, blockNumber, logIndex);
+  ORDER BY (name, blockNumber, logIndex)
+  PARTITION BY toYYYYMM(timestamp);
 
 CREATE MATERIALIZED VIEW IF NOT EXISTS events_mv TO events
 AS SELECT address,
   blockHash,
   blockNumber,
   logIndex,
+  removed,
+  topics,
   transactionHash,
   transactionIndex,
+  transactionLogIndex,
   type,
+  id,
   primaryKey,
-  toDateTime("timestamp") as dt,
+  toDateTime(timestamp) as timestamp,
   decoded,
   name
 FROM events_stream;
