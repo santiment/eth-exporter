@@ -15,7 +15,7 @@ Then create a folder for the new exporter and initialize the skeleton:
 
 ```
 $ mkdir my-exporter && cd my-exporter
-$ yo eth-exporter
+$ yo @santiment-network/eth-exporter
 ```
 
 Running the exporter is done with
