@@ -30,6 +30,14 @@ If you want to cleanup the current state and run from the beginning run
 $ docker-compose rm
 ```
 
+## Connect to the analytics DB
+
+The pipeline uses (ClickHouse)[https://clickhouse.yandex] as an analytics DB. This is a very fast columnar DB, which allows to use SQL to query the data. In order to connect to the DB run:
+
+```
+$ docker-compose exec clickhouse clickhouse-client
+```
+
 ## Running the tests
 
 To run the tests run
