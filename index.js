@@ -52,7 +52,7 @@ exports.ETHExporter = class {
   constructor(exporterName) {
     this.blockInterval = parseInt(process.env.BLOCK_INTERVAL || "100");
     this.confirmations = parseInt(process.env.CONFIRMATIONS || "3");
-    this.parityNode = process.env.PARITY_URL || "http://localhost:8545/";
+    this.parityNode = process.env.ETHEREUM_NODE_URL || process.env.PARITY_URL || "http://localhost:8545/";
 
     this.exporter = new Exporter(exporterName)
 
