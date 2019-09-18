@@ -65,6 +65,6 @@ This is going to extract all the events defined in the ABI from all contracts de
 The function `extractEventsWithAbi` accepts the following parameters:
 
 * abi - ABI to use to decode the events
-* topics - a list of topics to filter the events. See (https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#getpastlogs)[getPastLogs] docs for details. If `null` is passed, all the events in the ABI will be decoded.
-* addresses - a list of addresses to filter the events on. See (https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#getpastlogs)[getPastLogs] docs for details. If `null` is passes, the events from all addresses will be decoded.
+* topics - a list of topics to filter the events. See [https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#getpastlogs](getPastLogs) docs for details. If `null` is passed, all the events in the ABI will be decoded.
+* addresses - a list of addresses to filter the events on. See [https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#getpastlogs](getPastLogs) docs for details. If `null` is passes, the events from all addresses will be decoded.
 * eventHandler - an optional function, which will get all the decoded events and should return the event that needs to be stored in the DB. Can be used to additional processing of the extracted events. If the function returns `null`, the decoded events won't be saved in the DB.
