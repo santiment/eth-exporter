@@ -64,7 +64,19 @@ This is going to extract all the events defined in the ABI from all contracts de
 
 The function `extractEventsWithAbi` accepts the following parameters:
 
-* abi - ABI to use to decode the events
-* topics - a list of topics to filter the events. See [getPastLogs](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#getpastlogs) docs for details. If `null` is passed, all the events in the ABI will be decoded.
-* addresses - a list of addresses to filter the events on. See [getPastLogs](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#getpastlogs) docs for details. If `null` is passes, the events from all addresses will be decoded.
-* eventHandler - an optional function, which will get all the decoded events and should return the event that needs to be stored in the DB. Can be used to additional processing of the extracted events. If the function returns `null`, the decoded events won't be saved in the DB.
+* `abi` - ABI to use to decode the events
+* `topics` - a list of topics to filter the events. See [getPastLogs](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#getpastlogs) docs for details. If `null` is passed, all the events in the ABI will be decoded.
+* `addresses` - a list of addresses to filter the events on. See [getPastLogs](https://web3js.readthedocs.io/en/v1.2.1/web3-eth.html#getpastlogs) docs for details. If `null` is passes, the events from all addresses will be decoded.
+* `eventHandler` - an optional function, which will get all the decoded events and should return the event that needs to be stored in the DB. Can be used to additional processing of the extracted events. If the function returns `null`, the decoded events won't be saved in the DB.
+
+## Config
+
+The script accepts configuration via environment variables. This is very convenient, when you run it through docker. The recognized variables are:
+
+* `KAFKA_URL` - A URL to the kafka cluster the data will be dumped to
+* `ZOOKEEPER_URL` - A URL to the zookeeper cluster. It is used for storing the current state of the export
+* `ETHEREUM_NODE_URL` - A URL to an ethereum full node, which will be used for making JSON-RPC calls
+* `KAFKA_TOPIC` - The topic in kafka, which will be used for dumping the data
+* `START_BLOCK` - The block from which to start the data extraction
+* `CONFIRMATIONS` - Number of confirmation to waits until dumping the data. This is needed so that you don't need to handle chain reorganizations
+* `BLOCK_INTERVAL` - Number of blocks to query at once when fetching the data. Decrease this if you start getting errors that messages size of the kafka message is too big
