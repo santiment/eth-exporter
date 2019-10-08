@@ -1,6 +1,6 @@
 # ETH Data Exporter
 
-This package defines an easy to use class for exporting data from the ETH blockchain to the Santiment Data Pipeline.
+This package defines an easy to use API for exporting data from the ETH blockchain into an analytics DB. It makes all the data queriable with SQL in real-time. There is a project generator, which includes an exporter, a DB hooked to it and a simple REST API on top of it.
 
 ## Usage
 
