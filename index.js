@@ -187,7 +187,7 @@ exports.ETHExporter = class {
           address)
         ).map(eventHandler)
 
-        events = _.compact(events)
+        events = _.flatten(_.compact(events))
 
         console.info(`Storing and setting primary keys ${events.length} messages for blocks ${fromBlock}:${toBlock}`)
         await this.exporter.sendDataWithKey(events, "primaryKey")
