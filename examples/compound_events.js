@@ -3,4 +3,6 @@ const contractAbi = require('./compound_abi.json')
 
 const exporter = new ETHExporter("compound-events")
 
-exporter.extractEventsWithAbi(contractAbi)
+const metrics = require('san-exporter/metrics')
+
+exporter.extractEventsWithAbi(contractAbi, [], [], metrics)

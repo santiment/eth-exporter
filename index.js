@@ -1,5 +1,5 @@
 const { formatters } = require('web3-core-helpers')
-const { Exporter } = require('@santiment-network/san-exporter')
+const { Exporter } = require('san-exporter')
 const Web3 = require('web3')
 const _ = require('lodash')
 
@@ -99,11 +99,12 @@ exports.ETHExporter = class {
     }
   }
 
-  async connect() {
+  async connect(metrics) {
     if (this.isConnected) return
 
     await this.exporter.connect()
     await this.initLastProcessedBlock()
+    metrics.startCollection()
 
     this.isConnected = true
   }
@@ -138,12 +139,12 @@ exports.ETHExporter = class {
    * @param {array} address A contract address or a list of contract addresses to filter the events
    * @param {function} eventHandler An optional function for additionally processing the events
    */
-  async extractEventsWithAbi(abi, topics, address, eventHandler) {
+  async extractEventsWithAbi(abi, topics, address, metrics, eventHandler) {
     if (!topics) {
       topics = [topicsFromAbi(this.web3, abi)]
     }
 
-    return this.extractEvents(topics, address, event => {
+    return this.extractEvents(topics, address, metrics, event => {
       const decodedEvent = this.decodeEvent(abi, event)
 
       if (!decodedEvent) return
@@ -165,18 +166,22 @@ exports.ETHExporter = class {
    * @param {array} topics An array of topics to listen for
    * @param {function} eventHandler A function which will be invoked to process each event
    */
-  async extractEvents(topics, address, eventHandler) {
+  async extractEvents(topics, address, metrics, eventHandler) {
     if (!this.isConnected) {
-      await this.connect()
+      await this.connect(metrics)
     }
 
     while (true) {
       const currentBlock = await this.web3.eth.getBlockNumber() - this.confirmations
+      metrics.currentBlock.set(currentBlock)
       console.info(`Fetching transfer events for interval ${this.lastProcessedPosition.blockNumber}:${currentBlock}`)
 
       while (this.lastProcessedPosition.blockNumber < currentBlock) {
         const fromBlock = this.lastProcessedPosition.blockNumber + 1
         const toBlock = Math.min(this.lastProcessedPosition.blockNumber + this.blockInterval, currentBlock)
+
+        const requestStartTime = new Date()
+        metrics.requestsCounter.inc()
 
         let events = (await processBlocks(
           this.web3,
@@ -187,12 +192,15 @@ exports.ETHExporter = class {
           address)
         ).map(eventHandler)
 
+        metrics.requestsResponseTime.observe(new Date() - requestStartTime)
+
         events = _.flatten(_.compact(events))
 
         console.info(`Storing and setting primary keys ${events.length} messages for blocks ${fromBlock}:${toBlock}`)
         await this.exporter.sendDataWithKey(events, "primaryKey")
 
         this.lastProcessedPosition.blockNumber = toBlock
+        metrics.lastExportedBlock.set(this.lastProcessedPosition.blockNumber)
         this.lastProcessedPosition.primaryKey += events.length
         await this.exporter.savePosition(this.lastProcessedPosition)
       }
