@@ -1,45 +1,37 @@
-FROM node:9.11.1-alpine AS builder
+FROM node:18.1.0-buster-slim AS builder
 
-RUN apk --no-cache add \
-  bash \
-  g++ \
-  ca-certificates \
-  lz4-dev \
-  musl-dev \
-  cyrus-sasl-dev \
-  openssl-dev \
-  make \
-  python \
-  git
+ARG NODE_ENV=production
+ENV NODE_ENV=${NODE_ENV}
+ENV PYTHON=/usr/bin/python3
 
-RUN apk add --no-cache --virtual .build-deps gcc zlib-dev libc-dev bsd-compat-headers py-setuptools bash
+RUN apt-get update; \
+    apt-get install -y bash \
+      g++ \
+      ca-certificates \
+      musl-dev \
+      make \
+      git \
+      python3
 
-WORKDIR /app
+WORKDIR /opt
 
-COPY package.json /app/package.json
-COPY package-lock.json /app/package-lock.json
+COPY package.json package-lock.json* ./
 
-RUN npm install
+RUN npm ci --${NODE_ENV}
+RUN npm cache clean --force
 
-FROM node:9.11.1-alpine
+FROM node:18.1.0-buster-slim
 
-RUN apk --no-cache add \
-  bash \
-  g++ \
-  ca-certificates \
-  lz4-dev \
-  musl-dev \
-  cyrus-sasl-dev \
-  openssl-dev \
-  make \
-  python \
-  git
+RUN apt-get update; \
+    apt-get install -y openssl netcat-openbsd
 
-WORKDIR /app
+WORKDIR /opt/app
 
-COPY --from=builder /app/node_modules /app/node_modules
+ENV PATH /opt/node_modules/.bin:${PATH}
 
-COPY . /app
+COPY . /opt/app
+
+COPY --from=builder /opt/node_modules /opt/node_modules
 
 EXPOSE 3000
 
