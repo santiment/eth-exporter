@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/santiment/eth-exporter#readme",
   "dependencies": {
-    "san-exporter": "git+https://github.com/santiment/san-exporter.git",
+    "san-exporter": "santiment/san-exporter#master",
     "lodash": "^4.x",
     "web3": "^1.2.1",
     "node-rdkafka": "^2.13.0",
