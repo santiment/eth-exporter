@@ -1,7 +1,9 @@
+const _ = require('lodash')
+const Web3 = require('web3')
 const { formatters } = require('web3-core-helpers')
 const { Exporter } = require('@santiment-network/san-exporter')
-const Web3 = require('web3')
-const _ = require('lodash')
+
+const { logger } = require('../logger');
 
 const USE_PARITY_BLOCK_HEADERS = process.env.USE_PARITY_BLOCK_HEADERS == "1" || process.env.USE_PARITY_BLOCK_HEADERS == "true"
 
@@ -92,10 +94,10 @@ exports.ETHExporter = class {
 
     if (lastPosition) {
       this.lastProcessedPosition = lastPosition
-      console.info(`Resuming export from position ${JSON.stringify(lastPosition)}`)
+      logger.info(`Resuming export from position ${JSON.stringify(lastPosition)}`)
     } else {
       await this.exporter.savePosition(this.lastProcessedPosition)
-      console.info(`Initialized exporter with initial position ${JSON.stringify(this.lastProcessedPosition)}`)
+      logger.info(`Initialized exporter with initial position ${JSON.stringify(this.lastProcessedPosition)}`)
     }
   }
 
@@ -126,7 +128,7 @@ exports.ETHExporter = class {
 
       return event
     } catch (e) {
-      console.error(`Error decoding ${JSON.stringify(event)}: ${e}`)
+      logger.error(`Error decoding ${JSON.stringify(event)}: ${e}`)
       return null
     }
   }
@@ -172,7 +174,7 @@ exports.ETHExporter = class {
 
     while (true) {
       const currentBlock = await this.web3.eth.getBlockNumber() - this.confirmations
-      console.info(`Fetching transfer events for interval ${this.lastProcessedPosition.blockNumber}:${currentBlock}`)
+      logger.info(`Fetching transfer events for interval ${this.lastProcessedPosition.blockNumber}:${currentBlock}`)
 
       while (this.lastProcessedPosition.blockNumber < currentBlock) {
         const fromBlock = this.lastProcessedPosition.blockNumber + 1
@@ -189,7 +191,7 @@ exports.ETHExporter = class {
 
         events = _.flatten(_.compact(events))
 
-        console.info(`Storing and setting primary keys ${events.length} messages for blocks ${fromBlock}:${toBlock}`)
+        logger.info(`Storing and setting primary keys ${events.length} messages for blocks ${fromBlock}:${toBlock}`)
         await this.exporter.sendDataWithKey(events, "primaryKey")
 
         this.lastProcessedPosition.blockNumber = toBlock
