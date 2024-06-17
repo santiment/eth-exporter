@@ -24,7 +24,7 @@
   "dependencies": {
     "@santiment-network/san-exporter": "0.0.5",
     "lodash": "^4.17.15",
-    "web3": "^1.2.1"
+    "web3": "^4.10.0"
   },
   "devDependencies": {
     "mocha": "^6.2.0"
